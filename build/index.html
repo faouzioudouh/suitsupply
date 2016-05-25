@@ -1,0 +1,38 @@
+
+<!doctype html>
+<html>
+    <head>
+        <script src="libs/polyfill.js"></script>
+        <script src="libs/system.js"></script>
+        <script>
+        // set our baseURL reference path
+        System.config({
+            packages: {
+                js: {
+                    format: 'register',
+                    defaultExtension: 'js'
+                },
+            },
+            meta: {
+                // our modules have been transpiled to commonJS
+                'js/*': {format: 'cjs'}
+            }
+        });
+
+         System.import('js/index.js')
+                     .then(null, console.error.bind(console));
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <section id=header>
+                <h2>Suitsupply news app</h2>
+            </section>
+            <section id="content">
+                <ul id="news-listing">
+                    
+                </ul>
+            </section>
+        </div>
+    </body>
+</html>
