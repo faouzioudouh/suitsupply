@@ -19,9 +19,10 @@ export class News{
         this.newsDetails.title = document.getElementById('details-title');
         this.newsDetails.thumbnail = document.getElementById('thumbnail');
         this.newsDetails.body = document.getElementById('details-body');
+        this.newsDetails.relatedStories = document.getElementById('listing-related-stories');
         
         this.searchInput.addEventListener('keyup', ({target}) => this.search(target));
-        this.dateInput.addEventListener('keyup', ({target}) => this.searchDate(target));
+        this.dateInput.addEventListener('change', ({target}) => this.searchDate(target));
         this.backBtn.addEventListener('click', () => this.backToListing());
         
     }
@@ -35,12 +36,12 @@ export class News{
         this.news =  data.results;
         
         this.news.forEach( one => {
-            
+            console.log( one );
             let li = document.createElement('li');
             this.news[this.news.indexOf(one)].DOMelement = li ;
             this.news[this.news.indexOf(one)].onAir = true ;
             li.addEventListener('click', ( {target} ) => this.showDetails( one, target ));            
-            li.textContent = `${ one.titleNoFormatting } | Published on ${ one.publishedDate }`;
+            li.innerHTML = `${ one.titleNoFormatting } | Published on ${ one.publishedDate }`;
             this.newsListing.appendChild(li);
             
         });
@@ -60,6 +61,16 @@ export class News{
         this.newsDetails.body.textContent = `${ article.titleNoFormatting }`;
         this.newsDetailsContainer.classList.remove('hide');
         
+        article.relatedStories.forEach( story => {this.showRelatedStories( story )});
+        
+    }
+    
+    showRelatedStories( story ){
+                
+            let li = document.createElement('li');
+            li.innerHTML  = `${ story.publisher } : <a href="${story.url}">${story.titleNoFormatting}</a> - Published on ${ story.publishedDate }`;            
+            this.newsDetails.relatedStories.appendChild(li);
+        
     }
     
     /**
@@ -70,9 +81,10 @@ export class News{
         let keyword = target.value;
 
         this.news.forEach( one => {
-            
-            let index = one.titleNoFormatting.search( keyword ) ;            
-            this.toggleArticle( one.DOMelement, index !== -1 && one.onAir );
+            console.log( one.onAir );
+            let titleIndex = one.titleNoFormatting.toLowerCase().search( keyword ) ;            
+            let contentIndex = one.content.toLowerCase().search( keyword ) ;            
+            this.toggleArticle( one , contentIndex !== -1 || titleIndex !== -1 );
            
         });
         
@@ -82,9 +94,10 @@ export class News{
      * 
      */
     searchDate( target ){
+        
         let date = target.value;
-
-        if( date == "") return;
+        let regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
+        if( date == "" || !date.match( regex ) ) return;
         
         this.news.forEach( one => {
             
@@ -115,17 +128,20 @@ export class News{
      * 
      */
     toggleArticle( article , toggle ){
-        
+        console.log( this.news);
         let index = this.news.indexOf(article);
 
-        if( -1 !== index ) this.news[index].onAir = toggle ;
+        // if( -1 !== index ) this.news[index].onAir = toggle ;
         
         
         if( false === toggle && undefined !== article.DOMelement ){
              article.DOMelement.classList.add('hide'); 
+             this.news[index].onAir = true;
         }
         else if( true === toggle && undefined !== article.DOMelement ){ 
             article.DOMelement.classList.remove('hide');
+             this.news[index].onAir = false;
+            
         }
     }
     

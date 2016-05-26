@@ -29,12 +29,13 @@ var News = exports.News = function () {
         this.newsDetails.title = document.getElementById('details-title');
         this.newsDetails.thumbnail = document.getElementById('thumbnail');
         this.newsDetails.body = document.getElementById('details-body');
+        this.newsDetails.relatedStories = document.getElementById('listing-related-stories');
 
         this.searchInput.addEventListener('keyup', function (_ref) {
             var target = _ref.target;
             return _this.search(target);
         });
-        this.dateInput.addEventListener('keyup', function (_ref2) {
+        this.dateInput.addEventListener('change', function (_ref2) {
             var target = _ref2.target;
             return _this.searchDate(target);
         });
@@ -57,7 +58,7 @@ var News = exports.News = function () {
             this.news = data.results;
 
             this.news.forEach(function (one) {
-
+                console.log(one);
                 var li = document.createElement('li');
                 _this2.news[_this2.news.indexOf(one)].DOMelement = li;
                 _this2.news[_this2.news.indexOf(one)].onAir = true;
@@ -65,7 +66,7 @@ var News = exports.News = function () {
                     var target = _ref3.target;
                     return _this2.showDetails(one, target);
                 });
-                li.textContent = one.titleNoFormatting + ' | Published on ' + one.publishedDate;
+                li.innerHTML = one.titleNoFormatting + ' | Published on ' + one.publishedDate;
                 _this2.newsListing.appendChild(li);
             });
         }
@@ -77,6 +78,7 @@ var News = exports.News = function () {
     }, {
         key: 'showDetails',
         value: function showDetails(article, target) {
+            var _this3 = this;
 
             this.newsListing.classList.add('hide');
             this.backBtn.classList.remove('hide');
@@ -85,6 +87,18 @@ var News = exports.News = function () {
             this.newsDetails.thumbnail.src = article.image.url;
             this.newsDetails.body.textContent = '' + article.titleNoFormatting;
             this.newsDetailsContainer.classList.remove('hide');
+
+            article.relatedStories.forEach(function (story) {
+                _this3.showRelatedStories(story);
+            });
+        }
+    }, {
+        key: 'showRelatedStories',
+        value: function showRelatedStories(story) {
+
+            var li = document.createElement('li');
+            li.innerHTML = story.publisher + ' : <a href="' + story.url + '">' + story.titleNoFormatting + '</a> - Published on ' + story.publishedDate;
+            this.newsDetails.relatedStories.appendChild(li);
         }
 
         /**
@@ -94,14 +108,15 @@ var News = exports.News = function () {
     }, {
         key: 'search',
         value: function search(target) {
-            var _this3 = this;
+            var _this4 = this;
 
             var keyword = target.value;
 
             this.news.forEach(function (one) {
-
-                var index = one.titleNoFormatting.search(keyword);
-                _this3.toggleArticle(one.DOMelement, index !== -1 && one.onAir);
+                console.log(one.onAir);
+                var titleIndex = one.titleNoFormatting.toLowerCase().search(keyword);
+                var contentIndex = one.content.toLowerCase().search(keyword);
+                _this4.toggleArticle(one, contentIndex !== -1 || titleIndex !== -1);
             });
         }
 
@@ -112,11 +127,11 @@ var News = exports.News = function () {
     }, {
         key: 'searchDate',
         value: function searchDate(target) {
-            var _this4 = this;
+            var _this5 = this;
 
             var date = target.value;
-
-            if (date == "") return;
+            var regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
+            if (date == "" || !date.match(regex)) return;
 
             this.news.forEach(function (one) {
 
@@ -133,7 +148,7 @@ var News = exports.News = function () {
                 searchDate.month = new_date.toLocaleString('en-us', { month: "short" });
                 searchDate.year = new_date.getFullYear().toString();
 
-                _this4.toggleArticle(one, searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year);
+                _this5.toggleArticle(one, searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year);
             });
         }
 
@@ -144,15 +159,17 @@ var News = exports.News = function () {
     }, {
         key: 'toggleArticle',
         value: function toggleArticle(article, toggle) {
-
+            console.log(this.news);
             var index = this.news.indexOf(article);
 
-            if (-1 !== index) this.news[index].onAir = toggle;
+            // if( -1 !== index ) this.news[index].onAir = toggle ;
 
             if (false === toggle && undefined !== article.DOMelement) {
                 article.DOMelement.classList.add('hide');
+                this.news[index].onAir = true;
             } else if (true === toggle && undefined !== article.DOMelement) {
                 article.DOMelement.classList.remove('hide');
+                this.news[index].onAir = false;
             }
         }
 
