@@ -1,7 +1,11 @@
-"use strict";
+'use strict';
 
-var _items = require("./items");
+var _news = require('./news');
 
-var tp = new _items.Items();
-tp.record("Hello... Hellooooo!!! Helloooooo!!!!!");
-tp.play();
+var news = new _news.News();
+
+news.httpGet('resources/data/data.json').then(function (response) {
+    news.bindNewsToHtml(response);
+}, function (error) {
+    console.log(error);
+});

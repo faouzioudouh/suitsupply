@@ -33,6 +33,9 @@ gulp.task('build', ['js', 'libs'], function(){
 });
 
 gulp.task('serve', ['build'], function() {
+    
+    gulp.watch(['app/**/*.*'], ['build']);
+    
     gulp.src('build')
         .pipe(webserver({open: true}));
 });

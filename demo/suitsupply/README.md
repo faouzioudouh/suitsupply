@@ -1,2 +1,0 @@
-# suitsupply
-Suitsupply news app

@@ -1,5 +1,16 @@
-import {Items} from "./items";
+'use strict';
 
-const tp = new Items();
-tp.record("Hello... Hellooooo!!! Helloooooo!!!!!");
-tp.play();
+import {News} from "./news";
+
+const news = new News();
+
+
+news.httpGet('resources/data/data.json')
+    .then( 
+        response =>  {
+            news.bindNewsToHtml( response );
+        }, 
+        error => {
+            console.log(error);
+        }
+    );

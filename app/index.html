@@ -22,16 +22,30 @@
          System.import('js/index.js')
                      .then(null, console.error.bind(console));
         </script>
+        <style>
+            .hide{
+                display: none;
+            }
+        </style>
     </head>
     <body>
-        <div class="container">
+        <div id="container">
             <section id=header>
+                <button id="back-btn" class="hide">back to news listing</button>
                 <h2>Suitsupply news app</h2>
+                <div class="search">
+                    <input type="text" id="search" title="Filter results">
+                    <input type="date" id="date" title="Filter results">
+                </div>
             </section>
             <section id="content">
                 <ul id="news-listing">
-                    
                 </ul>
+                <div id="news-details" class="hide">
+                    <h3 id="details-title"></h3>
+                    <img src="" alt="" id="thumbnail" onerror="">
+                    <p id="details-body"></p>
+                </div>
             </section>
         </div>
     </body>
