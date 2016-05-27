@@ -12,6 +12,10 @@ gulp.task('js', function() {
       .pipe(gulp.dest('build/js'));             
 });
 
+gulp.task('scss', function () {
+    return gulp.src('app/scss/*.scss')
+})
+
 gulp.task('libs', function(){
     return gulp.src([
         'node_modules/systemjs/dist/system.js',

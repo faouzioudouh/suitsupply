@@ -30,18 +30,20 @@ export class News{
     /**
      * 
      */
-    bindNewsToHtml( response ){
+    displayNews( response ){
         
         let data =  JSON.parse( response );
         this.news =  data.results;
         
         this.news.forEach( one => {
-            console.log( one );
+            
             let li = document.createElement('li');
-            this.news[this.news.indexOf(one)].DOMelement = li ;
-            this.news[this.news.indexOf(one)].onAir = true ;
+            let index = this.news.indexOf(one);
+            this.news[index].DOMelement = li ;
+            
             li.addEventListener('click', ( {target} ) => this.showDetails( one, target ));            
             li.innerHTML = `${ one.titleNoFormatting } | Published on ${ one.publishedDate }`;
+            li.classList.add("test");
             this.newsListing.appendChild(li);
             
         });
@@ -78,15 +80,18 @@ export class News{
      */
     search( target ){
         
-        let keyword = target.value;
+        let keyword = target.value.toLowerCase();
 
         this.news.forEach( one => {
-            console.log( one.onAir );
+
             let titleIndex = one.titleNoFormatting.toLowerCase().search( keyword ) ;            
-            let contentIndex = one.content.toLowerCase().search( keyword ) ;            
-            this.toggleArticle( one , contentIndex !== -1 || titleIndex !== -1 );
+            let contentIndex = one.content.toLowerCase().search( keyword ) ;
+            let hasClassHide = one.DOMelement.classList.contain('hide');
+            console.log( "has class "+ hasClassHide );         
+            this.toggleArticle( one , contentIndex !== -1 || titleIndex !== -1 && ! hasClassHide , keyword );
            
         });
+        console.log( this.news);
         
     }
     
@@ -96,8 +101,9 @@ export class News{
     searchDate( target ){
         
         let date = target.value;
+        let displayAll = false;
         let regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
-        if( date == "" || !date.match( regex ) ) return;
+        if( date == "" || !date.match( regex ) ){ displayAll = true; }
         
         this.news.forEach( one => {
             
@@ -114,10 +120,15 @@ export class News{
             searchDate.month = new_date.toLocaleString('en-us', { month: "short" });
             searchDate.year = new_date.getFullYear().toString();
 
+            let hasClassHide = ( one.DOMelement.classList.value !== "" )? one.DOMelement.classList.value.indexOf('hide') > -1 : false;         
+
             this.toggleArticle(one, 
-                searchDate.day === publishedDate.day &&
+                !hasClassHide &&
+                (displayAll ||
+                (searchDate.day === publishedDate.day &&
                 searchDate.month === publishedDate.month && 
                 searchDate.year === publishedDate.year
+                ))
             );
            
         });
@@ -127,20 +138,19 @@ export class News{
     /**
      * 
      */
-    toggleArticle( article , toggle ){
-        console.log( this.news);
-        let index = this.news.indexOf(article);
-
-        // if( -1 !== index ) this.news[index].onAir = toggle ;
+    toggleArticle( article , toggle, keyword ){
         
+        let index = this.news.indexOf(article);
         
         if( false === toggle && undefined !== article.DOMelement ){
              article.DOMelement.classList.add('hide'); 
-             this.news[index].onAir = true;
         }
         else if( true === toggle && undefined !== article.DOMelement ){ 
-            article.DOMelement.classList.remove('hide');
-             this.news[index].onAir = false;
+            
+            article.DOMelement.classList.remove( 'hide' );
+
+            var query = new RegExp( "(\\b" + keyword + "\\b)", "gi" );
+            article.DOMelement.innerHTML = this.news[index].titleNoFormatting.replace( query, "<mark>$1</mark>" );
             
         }
     }

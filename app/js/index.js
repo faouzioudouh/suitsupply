@@ -8,7 +8,7 @@ const news = new News();
 news.httpGet('resources/data/data.json')
     .then( 
         response =>  {
-            news.bindNewsToHtml( response );
+            news.displayNews( response );
         }, 
         error => {
             console.log(error);

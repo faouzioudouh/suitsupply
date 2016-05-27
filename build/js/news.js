@@ -50,23 +50,25 @@ var News = exports.News = function () {
 
 
     _createClass(News, [{
-        key: 'bindNewsToHtml',
-        value: function bindNewsToHtml(response) {
+        key: 'displayNews',
+        value: function displayNews(response) {
             var _this2 = this;
 
             var data = JSON.parse(response);
             this.news = data.results;
 
             this.news.forEach(function (one) {
-                console.log(one);
+
                 var li = document.createElement('li');
-                _this2.news[_this2.news.indexOf(one)].DOMelement = li;
-                _this2.news[_this2.news.indexOf(one)].onAir = true;
+                var index = _this2.news.indexOf(one);
+                _this2.news[index].DOMelement = li;
+
                 li.addEventListener('click', function (_ref3) {
                     var target = _ref3.target;
                     return _this2.showDetails(one, target);
                 });
                 li.innerHTML = one.titleNoFormatting + ' | Published on ' + one.publishedDate;
+                li.classList.add("test");
                 _this2.newsListing.appendChild(li);
             });
         }
@@ -110,14 +112,17 @@ var News = exports.News = function () {
         value: function search(target) {
             var _this4 = this;
 
-            var keyword = target.value;
+            var keyword = target.value.toLowerCase();
 
             this.news.forEach(function (one) {
-                console.log(one.onAir);
+
                 var titleIndex = one.titleNoFormatting.toLowerCase().search(keyword);
                 var contentIndex = one.content.toLowerCase().search(keyword);
-                _this4.toggleArticle(one, contentIndex !== -1 || titleIndex !== -1);
+                var hasClassHide = one.DOMelement.classList.contain('hide');
+                console.log("has class " + hasClassHide);
+                _this4.toggleArticle(one, contentIndex !== -1 || titleIndex !== -1 && !hasClassHide, keyword);
             });
+            console.log(this.news);
         }
 
         /**
@@ -130,8 +135,11 @@ var News = exports.News = function () {
             var _this5 = this;
 
             var date = target.value;
+            var displayAll = false;
             var regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
-            if (date == "" || !date.match(regex)) return;
+            if (date == "" || !date.match(regex)) {
+                displayAll = true;
+            }
 
             this.news.forEach(function (one) {
 
@@ -148,7 +156,9 @@ var News = exports.News = function () {
                 searchDate.month = new_date.toLocaleString('en-us', { month: "short" });
                 searchDate.year = new_date.getFullYear().toString();
 
-                _this5.toggleArticle(one, searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year);
+                var hasClassHide = one.DOMelement.classList.value !== "" ? one.DOMelement.classList.value.indexOf('hide') > -1 : false;
+
+                _this5.toggleArticle(one, !hasClassHide && (displayAll || searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year));
             });
         }
 
@@ -158,18 +168,18 @@ var News = exports.News = function () {
 
     }, {
         key: 'toggleArticle',
-        value: function toggleArticle(article, toggle) {
-            console.log(this.news);
-            var index = this.news.indexOf(article);
+        value: function toggleArticle(article, toggle, keyword) {
 
-            // if( -1 !== index ) this.news[index].onAir = toggle ;
+            var index = this.news.indexOf(article);
 
             if (false === toggle && undefined !== article.DOMelement) {
                 article.DOMelement.classList.add('hide');
-                this.news[index].onAir = true;
             } else if (true === toggle && undefined !== article.DOMelement) {
+
                 article.DOMelement.classList.remove('hide');
-                this.news[index].onAir = false;
+
+                var query = new RegExp("(\\b" + keyword + "\\b)", "gi");
+                article.DOMelement.innerHTML = this.news[index].titleNoFormatting.replace(query, "<mark>$1</mark>");
             }
         }
 
