@@ -86,7 +86,8 @@ export class News{
 
             let titleIndex = one.titleNoFormatting.toLowerCase().search( keyword ) ;            
             let contentIndex = one.content.toLowerCase().search( keyword ) ;
-            let hasClassHide = ( one.DOMelement.classList.value !== "" )? one.DOMelement.classList.value.indexOf('hide') > -1 : false;         
+            let hasClassHide = one.DOMelement.classList.contain('hide');
+            console.log( "has class "+ hasClassHide );         
             this.toggleArticle( one , contentIndex !== -1 || titleIndex !== -1 && ! hasClassHide , keyword );
            
         });
@@ -100,8 +101,9 @@ export class News{
     searchDate( target ){
         
         let date = target.value;
+        let displayAll = false;
         let regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
-        if( date == "" || !date.match( regex ) ){ return; }
+        if( date == "" || !date.match( regex ) ){ displayAll = true; }
         
         this.news.forEach( one => {
             
@@ -121,10 +123,12 @@ export class News{
             let hasClassHide = ( one.DOMelement.classList.value !== "" )? one.DOMelement.classList.value.indexOf('hide') > -1 : false;         
 
             this.toggleArticle(one, 
-                searchDate.day === publishedDate.day &&
+                !hasClassHide &&
+                (displayAll ||
+                (searchDate.day === publishedDate.day &&
                 searchDate.month === publishedDate.month && 
-                searchDate.year === publishedDate.year &&
-                !hasClassHide
+                searchDate.year === publishedDate.year
+                ))
             );
            
         });

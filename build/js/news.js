@@ -118,7 +118,8 @@ var News = exports.News = function () {
 
                 var titleIndex = one.titleNoFormatting.toLowerCase().search(keyword);
                 var contentIndex = one.content.toLowerCase().search(keyword);
-                var hasClassHide = one.DOMelement.classList.value !== "" ? one.DOMelement.classList.value.indexOf('hide') > -1 : false;
+                var hasClassHide = one.DOMelement.classList.contain('hide');
+                console.log("has class " + hasClassHide);
                 _this4.toggleArticle(one, contentIndex !== -1 || titleIndex !== -1 && !hasClassHide, keyword);
             });
             console.log(this.news);
@@ -134,9 +135,10 @@ var News = exports.News = function () {
             var _this5 = this;
 
             var date = target.value;
+            var displayAll = false;
             var regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
             if (date == "" || !date.match(regex)) {
-                return;
+                displayAll = true;
             }
 
             this.news.forEach(function (one) {
@@ -156,7 +158,7 @@ var News = exports.News = function () {
 
                 var hasClassHide = one.DOMelement.classList.value !== "" ? one.DOMelement.classList.value.indexOf('hide') > -1 : false;
 
-                _this5.toggleArticle(one, searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year && !hasClassHide);
+                _this5.toggleArticle(one, !hasClassHide && (displayAll || searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year));
             });
         }
 
