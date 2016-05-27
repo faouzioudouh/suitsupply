@@ -3,7 +3,7 @@
 
 export class News{
 
-    constructor( content ){
+    constructor(){
        
         this.news = [];
        
