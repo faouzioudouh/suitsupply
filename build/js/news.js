@@ -1,6 +1,10 @@
 
 'use strict';
 
+/**
+ * Class News.
+ */
+
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
@@ -10,6 +14,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var News = exports.News = function () {
+
+    /**
+     * Constructor.
+     */
+
     function News() {
         var _this = this;
 
@@ -17,12 +26,24 @@ var News = exports.News = function () {
 
         this.news = [];
 
+        //search elements.
         this.searchInput = document.getElementById('search');
+        this.searchContainer = document.getElementById('search-container');
         this.dateInput = document.getElementById('date');
+
+        //settings elemenst.
+        this.settingBtn = document.getElementById('setting-btn');
+        this.settingsContainer = document.getElementById('settings-container');
+        this.settings = {};
+        this.settings.stories_number = document.getElementById('stories-number');
+        this.settings.show_related_stories = document.getElementById('show-related-stories');
+        this.settings.show_images = document.getElementById('show-images');
+        this.btnResetSearch = document.getElementById('reset-search');
 
         this.backBtn = document.getElementById('back-btn');
         this.newsContainer = document.getElementById('container');
         this.newsListing = document.getElementById('news-listing');
+        this.noResultsContainer = document.getElementById('no-results');
 
         this.newsDetailsContainer = document.getElementById('news-details');
         this.newsDetails = {};
@@ -31,139 +52,195 @@ var News = exports.News = function () {
         this.newsDetails.body = document.getElementById('details-body');
         this.newsDetails.relatedStories = document.getElementById('listing-related-stories');
 
-        this.searchInput.addEventListener('keyup', function (_ref) {
-            var target = _ref.target;
-            return _this.search(target);
+        //keyup events listeners.       
+        this.searchInput.addEventListener('keyup', function () {
+            return _this.displayNews();
         });
-        this.dateInput.addEventListener('change', function (_ref2) {
-            var target = _ref2.target;
-            return _this.searchDate(target);
+        this.dateInput.addEventListener('keyup', function () {
+            return _this.displayNews();
         });
+        this.settings.stories_number.addEventListener('keyup', function () {
+            return _this.changeSettings();
+        });
+
+        //change events listeners.
+        this.settings.show_related_stories.addEventListener('change', function () {
+            return _this.changeSettings();
+        });
+        this.settings.show_images.addEventListener('change', function () {
+            return _this.changeSettings();
+        });
+
+        //Click events listeners.
         this.backBtn.addEventListener('click', function () {
             return _this.backToListing();
+        });
+        this.settingBtn.addEventListener('click', function () {
+            return _this.toggleSettingsVisibility();
+        });
+        this.btnResetSearch.addEventListener('click', function () {
+            return _this.resetSearchForm();
         });
     }
 
     /**
-     * 
+     * Display stories.
      */
 
 
     _createClass(News, [{
         key: 'displayNews',
-        value: function displayNews(response) {
+        value: function displayNews() {
             var _this2 = this;
 
-            var data = JSON.parse(response);
-            this.news = data.results;
+            this.toggleNoResulstNotif(false);
+            this.newsListing.innerHTML = "";
 
-            this.news.forEach(function (one) {
+            if (this.news.length < 1) return;
 
-                var li = document.createElement('li');
-                var index = _this2.news.indexOf(one);
-                _this2.news[index].DOMelement = li;
+            //
+            var keyword = this.searchInput.value.toLowerCase();
+            var date = this.dateInput.value;
+            this.noResults = true;
+            var dateValide = true;
+            var keywordValide = true;
 
-                li.addEventListener('click', function (_ref3) {
-                    var target = _ref3.target;
-                    return _this2.showDetails(one, target);
-                });
-                li.innerHTML = one.titleNoFormatting + ' | Published on ' + one.publishedDate;
-                li.classList.add("test");
-                _this2.newsListing.appendChild(li);
+            var regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
+            if (date == "" || !date.match(regex)) {
+                dateValide = false;
+            }
+            if (keyword == "") {
+                keywordValide = false;
+            }
+            //
+
+            this.news.forEach(function (story) {
+
+                //search start
+
+                var titleIndex = void 0,
+                    contentIndex = void 0,
+                    dateIndex = void 0;
+                titleIndex = true;contentIndex = true;dateIndex = true;
+
+                if (keywordValide) {
+                    titleIndex = story.titleNoFormatting.toLowerCase().search(keyword) !== -1;
+                    contentIndex = story.content.toLowerCase().search(keyword) !== -1;
+                }
+                if (dateValide) {
+                    dateIndex = _this2._searchDate(story, date);
+                }
+
+                //search end
+                if ((titleIndex || contentIndex) && dateIndex) {
+
+                    _this2.noResults = false;
+                    var li = document.createElement('li');
+                    var index = _this2.news.indexOf(story);
+                    _this2.news[index].DOMelement = li;
+
+                    li.addEventListener('click', function (_ref) {
+                        var target = _ref.target;
+                        return _this2.showDetails(story, target);
+                    });
+                    li.innerHTML = story.titleNoFormatting + ' <span class="publishe-date" title="Published date">' + story.publishedDate + ' </span>';
+                    _this2.newsListing.appendChild(li);
+                }
             });
+
+            this.toggleNoResulstNotif(this.noResults);
         }
 
         /**
-         * 
+         * Set data.
+         */
+
+    }, {
+        key: 'setData',
+        value: function setData(data) {
+            this.news = data;
+        }
+
+        /**
+         * Display details of a story.
          */
 
     }, {
         key: 'showDetails',
-        value: function showDetails(article, target) {
+        value: function showDetails(story, target) {
             var _this3 = this;
 
             this.newsListing.classList.add('hide');
+            this.searchContainer.classList.add('hide');
+            this.settingBtn.classList.add('hide');
+            this.settingsContainer.classList.add('hide');
             this.backBtn.classList.remove('hide');
 
-            this.newsDetails.title.textContent = article.titleNoFormatting + ' | Published on ' + article.publishedDate;
-            this.newsDetails.thumbnail.src = article.image.url;
-            this.newsDetails.body.textContent = '' + article.titleNoFormatting;
+            this.newsDetails.title.innerHTML = story.titleNoFormatting + ' <span class="publishe-date" title="Published date">' + story.publishedDate + ' </span>';
+            this.newsDetails.thumbnail.src = story.image.url;
+            this.newsDetails.thumbnail.alt = story.titleNoFormatting;
+            this.newsDetails.thumbnail.title = story.titleNoFormatting;
+            this.newsDetails.body.innerHTML = '' + story.content;
             this.newsDetailsContainer.classList.remove('hide');
 
-            article.relatedStories.forEach(function (story) {
-                _this3.showRelatedStories(story);
-            });
+            //If related stories avialable.
+            if (story.relatedStories.length > 0) {
+                story.relatedStories.forEach(function (story) {
+                    _this3.showRelatedStories(story);
+                });
+            }
         }
+
+        /**
+         * Display related stories.
+         */
+
     }, {
         key: 'showRelatedStories',
         value: function showRelatedStories(story) {
 
             var li = document.createElement('li');
-            li.innerHTML = story.publisher + ' : <a href="' + story.url + '">' + story.titleNoFormatting + '</a> - Published on ' + story.publishedDate;
+            li.innerHTML = '<a href="' + story.url + '">' + story.titleNoFormatting + '</a> <span class="publisher" title="Publisher">' + story.publisher + '</span> <span class="publishe-date" title="Published date">' + story.publishedDate + '</span>';
             this.newsDetails.relatedStories.appendChild(li);
         }
 
         /**
-         * 
+         * Show no results message.
          */
 
     }, {
-        key: 'search',
-        value: function search(target) {
-            var _this4 = this;
-
-            var keyword = target.value.toLowerCase();
-
-            this.news.forEach(function (one) {
-
-                var titleIndex = one.titleNoFormatting.toLowerCase().search(keyword);
-                var contentIndex = one.content.toLowerCase().search(keyword);
-                var hasClassHide = one.DOMelement.classList.contain('hide');
-                console.log("has class " + hasClassHide);
-                _this4.toggleArticle(one, contentIndex !== -1 || titleIndex !== -1 && !hasClassHide, keyword);
-            });
-            console.log(this.news);
+        key: 'toggleNoResulstNotif',
+        value: function toggleNoResulstNotif(toggle) {
+            if (true == toggle) this.noResultsContainer.classList.remove('hide');else if (false == toggle) this.noResultsContainer.classList.add('hide');
         }
 
         /**
-         * 
+         * Implementing search by publsihed date function.
+         * @private
          */
 
     }, {
-        key: 'searchDate',
-        value: function searchDate(target) {
-            var _this5 = this;
+        key: '_searchDate',
+        value: function _searchDate(story, date) {
 
-            var date = target.value;
-            var displayAll = false;
-            var regex = /^(19|20)\d\d[-](0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])$/;
-            if (date == "" || !date.match(regex)) {
-                displayAll = true;
-            }
+            var publishedDate = {};
+            var searchDate = {};
+            var split = story.publishedDate.split(' ');
+            var new_date = new Date(date);
 
-            this.news.forEach(function (one) {
+            publishedDate.day = split[1];
+            publishedDate.month = split[2];
+            publishedDate.year = split[3];
 
-                var publishedDate = {};
-                var searchDate = {};
-                var split = one.publishedDate.split(' ');
-                var new_date = new Date(date);
+            searchDate.day = new_date.getDate().toString();
+            searchDate.month = new_date.toLocaleString('en-us', { month: "short" });
+            searchDate.year = new_date.getFullYear().toString();
 
-                publishedDate.day = split[1];
-                publishedDate.month = split[2];
-                publishedDate.year = split[3];
-
-                searchDate.day = new_date.getDate().toString();
-                searchDate.month = new_date.toLocaleString('en-us', { month: "short" });
-                searchDate.year = new_date.getFullYear().toString();
-
-                var hasClassHide = one.DOMelement.classList.value !== "" ? one.DOMelement.classList.value.indexOf('hide') > -1 : false;
-
-                _this5.toggleArticle(one, !hasClassHide && (displayAll || searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year));
-            });
+            return searchDate.day === publishedDate.day && searchDate.month === publishedDate.month && searchDate.year === publishedDate.year;
         }
 
         /**
-         * 
+         * Toggle article visibility (hide/show).
          */
 
     }, {
@@ -175,16 +252,18 @@ var News = exports.News = function () {
             if (false === toggle && undefined !== article.DOMelement) {
                 article.DOMelement.classList.add('hide');
             } else if (true === toggle && undefined !== article.DOMelement) {
-
+                this.noResults = false;
                 article.DOMelement.classList.remove('hide');
 
-                var query = new RegExp("(\\b" + keyword + "\\b)", "gi");
-                article.DOMelement.innerHTML = this.news[index].titleNoFormatting.replace(query, "<mark>$1</mark>");
+                if (keyword !== "") {
+                    var query = new RegExp("(\\b" + keyword + "\\b)", "gim");
+                    article.DOMelement.innerHTML = this.news[index].titleNoFormatting.replace(query, "<mark>$1</mark>") + ' <span class="publishe-date">' + article.publishedDate + ' </span>';
+                }
             }
         }
 
         /**
-         * 
+         * Click event listener callback.
          */
 
     }, {
@@ -194,10 +273,58 @@ var News = exports.News = function () {
             this.newsListing.classList.remove('hide');
             this.backBtn.classList.add('hide');
             this.newsDetailsContainer.classList.add('hide');
+            this.searchContainer.classList.remove('hide');
+            this.settingBtn.classList.remove('hide');
+        }
+
+        /**
+         * Toggle settings visibility.
+         */
+
+    }, {
+        key: 'toggleSettingsVisibility',
+        value: function toggleSettingsVisibility() {
+
+            if (this.settingsContainer.classList.contains('hide')) {
+                this.settingsContainer.classList.remove('hide');
+                this.searchContainer.classList.add('hide');
+            } else {
+                this.searchContainer.classList.remove('hide');
+                this.settingsContainer.classList.add('hide');
+            }
         }
 
         /**
          * 
+         */
+
+    }, {
+        key: 'changeSettings',
+        value: function changeSettings() {
+
+            if (this.settings.show_related_stories.checked) {
+                this.newsDetails.relatedStories.classList.remove('hide');
+            } else {
+                this.newsDetails.relatedStories.classList.add('hide');
+            }
+
+            if (this.settings.show_images.checked) {
+                this.newsDetails.thumbnail.classList.remove('hide');
+            } else {
+                this.newsDetails.thumbnail.classList.add('hide');
+            }
+
+            if (this.settings.stories_number.value > 0) {}
+        }
+    }, {
+        key: 'resetSearchForm',
+        value: function resetSearchForm() {
+            document.getElementById("search-form").reset();
+            this.displayNews(this.news);
+        }
+
+        /**
+         * Get news JSON.
          */
 
     }, {
@@ -219,7 +346,7 @@ var News = exports.News = function () {
                 };
 
                 request.onerror = function () {
-                    reject(Error('Something went wrong'));
+                    reject(Error('Sorry, something went wrong'));
                 };
 
                 request.send();

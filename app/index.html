@@ -6,7 +6,75 @@
         <script src="libs/polyfill.js"></script>
         <script src="libs/system.js"></script>
         <script>
-        // set our baseURL reference path
+        var slowConnection = window.setTimeout( function() {
+            
+            // if(confirm("Do you want to swith to basic html ?")){
+            //     window.location.href = 'http://localhost:8000/basic';           
+            // }
+        }, 2000);
+        
+        document.addEventListener( 'load', function() {
+            alert('loaded');
+            window.clearTimeout( slowConnection );
+        }, false );
+        </script>
+    </head>
+    <body>
+        <div id="container">
+            <section id=header>
+                <button id="back-btn" class="hide" title="Go back to news listing">X</button>
+                <button id="setting-btn" title="settings">Settings</button>
+                <h2>Suitsupply news app</h2>
+                <div id="search-container">
+                    <h3>Filters</h3>
+                    <form name="search_form" id="search-form">
+                    <div class="input">
+                        <label for="keyword">Search keyword</label>
+                        <input type="search" id="search" name="search" title="Filter results" placeholder="e.g. Donald">                        
+                    </div>
+                    <div class="input">
+                        <label for="date">Date of publishe</label>
+                        <input type="date" id="date" title="Filter results" placeholder="e.g. 2015-20-11">                        
+                    </div>
+                    </form>
+                </div>
+                <div id="settings-container" class="hide">
+                    <h3>Settings</h3>
+                    <div class="input">
+                        <label for="keyword">Number of stories to show</label>
+                        <input type="number" id="stories-number" name="stories_number" title="Number of stories to show" placeholder="e.g. 5">                        
+                    </div>
+                    <div class="input">
+                        <label for="date">Show related stories</label>
+                        <input type="checkbox" id="show-related-stories" title="Show related stories ?" checked>                        
+                    </div>
+                    <div class="input">
+                        <label for="date">Show images</label>
+                        <input type="checkbox" id="show-images" title="Show images ?" checked>                        
+                    </div>
+                </div>
+            </section>
+            <section id="content">
+                <ul id="news-listing">
+                </ul>
+                <div id="no-results" class="hide">
+                    <p>No Results to display, sorry.</p>
+                    <p><a href="#" id="reset-search">Click here</a> to reset the search form.</p>
+                    
+                </div>
+                <div id="news-details" class="hide">
+                    <h3 id="details-title"></h3>
+                    <div class="img-container">
+                        <img src="" alt="" id="thumbnail" >                    
+                    </div>
+                    <p id="details-body"></p>
+                    <div class="related-news">
+                        <ul id="listing-related-stories"></ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+                <script>
         System.config({
             packages: {
                 js: {
@@ -15,7 +83,6 @@
                 },
             },
             meta: {
-                // our modules have been transpiled to commonJS
                 'js/*': {format: 'cjs'}
             }
         });
@@ -23,34 +90,5 @@
          System.import('js/index.js')
                      .then(null, console.error.bind(console));
         </script>
-        <style>
-            .hide{
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="container">
-            <section id=header>
-                <button id="back-btn" class="hide">back to news listing</button>
-                <h2>Suitsupply news app</h2>
-                <div class="search">
-                    <input type="text" id="search" title="Filter results" placeholder="e.g. Donald">
-                    <input type="date" id="date" title="Filter results" placeholder="e.g. 2015-20-11">
-                </div>
-            </section>
-            <section id="content">
-                <ul id="news-listing">
-                </ul>
-                <div id="news-details" class="hide">
-                    <h3 id="details-title"></h3>
-                    <img src="" alt="" id="thumbnail" onerror="">
-                    <p id="details-body"></p>
-                    <div class="related-news">
-                        <ul id="listing-related-stories"></ul>
-                    </div>
-                </div>
-            </section>
-        </div>
     </body>
 </html>

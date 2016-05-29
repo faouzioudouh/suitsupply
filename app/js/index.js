@@ -8,7 +8,9 @@ const news = new News();
 news.httpGet('resources/data/data.json')
     .then( 
         response =>  {
-            news.displayNews( response );
+            let data =  JSON.parse( response );
+            news.setData( data.results );
+            news.displayNews();
         }, 
         error => {
             console.log(error);
